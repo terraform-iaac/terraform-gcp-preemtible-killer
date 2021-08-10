@@ -2,11 +2,11 @@
 Source: https://github.com/estafette/estafette-gke-preemptible-killer.git
 
 Source version: 1.2.5
-### Why?
+### Introduction
 When creating a cluster, all the node are created at the same time and should be deleted after 24h of activity. To prevent large disruption, the estafette-gke-preemptible-killer can be used to kill instances during a random period of time between 12 and 24h. It makes use of the node annotation to store the time to kill value.
 
-### How does that work ?
-At a given interval, the application get the list of preemptible nodes and check weither the node should be deleted or not. If the annotation doesn't exist, a time to kill value is added to the node annotation with a random range between 12h and 24h based on the node creation time stamp. When the time to kill time is passed, the Kubernetes node is marked as unschedulable, drained and the instance deleted on GCloud.
+### Wokrflow
+At a given interval, the application get the list of preemptible nodes and check weither *the node should be deleted or not. If the annotation doesn't exist, a time to kill value is added to the node annotation with a random range between 12h and 24h based on the node creation time stamp. When the time to kill time is passed, the Kubernetes node is marked as unschedulable, drained and the instance deleted on GCloud.
 
 ### Known limitations
 
@@ -18,16 +18,16 @@ At a given interval, the application get the list of preemptible nodes and check
 
 
 
-### Terraform providers:
-* google >= (v 3.19.0)
-* kubernetes => (v 1.11.1)
-* helm => (v 1.1.1)
+### Software Requirements
+Name | Description
+--- | --- |
+Terraform | >= 0.14.9
+Google | >= 3.19.0
+Kubernetes provider | >= 1.11.1
+Helm | >= 1.1.1
 
-### Usage
+## Usage
 
-#####Before apply, please enable `Cloud Resource Manager API`
-
-##### Examples:
  ```shell script
 module "preemtible-killer" {
   source = "git::*"
@@ -44,10 +44,13 @@ module "preemtible-killer" {
 }
 ```
 
-##### You can use variables to configure the following settings:
-| Variables (optionals)  | Default  | Description
-| ---------------------- | -------- | -----------------------------------------------------------------
-| BLACKLIST_HOURS        |          | List of UTC time intervals in the form of `["09:00 - 12:00, 13:00 - 18:00"]` in which deletion is NOT allowed
-| DRAIN_TIMEOUT          | 300      | Max time in second to wait before deleting a node
-| INTERVAL               | 600      | Time in second to wait between each node check
-| WHITELIST_HOURS        |          | List of UTC time intervals in the form of `["07:00 - 19:00"]` in which deletion is allowed and preferred
+#####Before apply, please enable `Cloud Resource Manager API`
+
+## Inputs
+Name | Description | Type | Default | Example | Required
+--- | --- | --- | --- |--- |--- 
+whitelist_hours | List of UTC time intervals in which deletion is allowed and preferred | `list(string)` | `[]` | `["09:00 - 12:00, 13:00 - 18:00"]` | no
+blacklist_hours | List of UTC time intervals in which deletion is NOT allowed | `list(string)` | `[]` | `["07:00 - 19:00"]` | no
+drain_timeout | Max time in second to wait before deleting a node | `string` | `300` | n/a | no
+interval_checks | Time in second to wait between each node check | `string` | `600` | n/a | no
+additional_set | Add additional set for helm | `list(string)` | `[]` | n/a | no
